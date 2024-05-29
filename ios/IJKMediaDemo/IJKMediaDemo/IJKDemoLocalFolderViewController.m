@@ -122,10 +122,12 @@
             [self.navigationController pushViewController:viewController animated:YES];
         } break;
         case 1: {
-            NSString *fileName = [_folderPath stringByAppendingPathComponent:_files[indexPath.row]];
-
-            fileName = [fileName stringByStandardizingPath];
-            
+//            NSString *fileName = [_folderPath stringByAppendingPathComponent:_files[indexPath.row]];
+//
+//            fileName = [fileName stringByStandardizingPath];
+            //临时测试使用 start
+            NSString* fileName=[[NSBundle mainBundle] pathForResource:@"AFD" ofType:@"mkv"];
+            //end
             [IJKVideoViewController presentFromViewController:self withTitle:[NSString stringWithFormat:@"File: %@", fileName] URL:[NSURL fileURLWithPath:fileName] completion:^{
             }];
             

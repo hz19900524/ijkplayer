@@ -214,7 +214,8 @@ void IJKFFIOStatCompleteRegister(void (*cb)(const char *url,
 
         // init video sink
         _glView = [[IJKSDLGLView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-        _glView.isThirdGLView = NO;
+        //临时测试设置成yes
+        _glView.isThirdGLView = YES;
         _view = _glView;
         _hudViewController = [[IJKSDLHudViewController alloc] init];
         [_hudViewController setRect:_glView.frame];

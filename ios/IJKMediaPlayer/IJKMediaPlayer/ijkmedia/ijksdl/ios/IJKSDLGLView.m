@@ -329,6 +329,21 @@ typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
 }
 
 - (void) display_pixels: (IJKOverlay *) overlay {
+//    const uint8_t * dst_data;
+//    ijk_image_convert(overlay->w,overlay->h,AV_PIX_FMT_0BGR32,dst_data,overlay->w*4,
+//                      overlay->format,overlay->pixels[0],);
+//    int width, int height,
+//        enum AVPixelFormat dst_format, uint8_t **dst_data, int *dst_linesize,
+//        enum AVPixelFormat src_format, const uint8_t **src_data, const int *src_linesize
+    
+    
+//    @autoreleasepool {
+//        NSData* data=[NSData dataWithBytes:<#(nullable const void *)#> length:<#(NSUInteger)#>];
+//        UIImage* image=[UIImage imageWithData:data];
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            self.backgroundColor=[UIColor colorWithPatternImage:image];
+//        });
+//    }
     return;
 }
 
