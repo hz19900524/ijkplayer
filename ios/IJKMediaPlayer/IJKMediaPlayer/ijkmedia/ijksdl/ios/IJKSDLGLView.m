@@ -24,10 +24,11 @@
  */
 
 #import "IJKSDLGLView.h"
+#import "ESCUIImageToDataTool.h"
 #include "ijksdl/ijksdl_timer.h"
 #include "ijksdl/ios/ijksdl_ios.h"
 #include "ijksdl/ijksdl_gles2.h"
-
+#include "ijksdl_image_convert.h"
 typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
     IJKSDLGLViewApplicationUnknownState = 0,
     IJKSDLGLViewApplicationForegroundState = 1,
@@ -327,23 +328,26 @@ typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
 
     [self unlockGLActive];
 }
-
-- (void) display_pixels: (IJKOverlay *) overlay {
-//    const uint8_t * dst_data;
-//    ijk_image_convert(overlay->w,overlay->h,AV_PIX_FMT_0BGR32,dst_data,overlay->w*4,
-//                      overlay->format,overlay->pixels[0],);
-//    int width, int height,
-//        enum AVPixelFormat dst_format, uint8_t **dst_data, int *dst_linesize,
-//        enum AVPixelFormat src_format, const uint8_t **src_data, const int *src_linesize
-    
-    
-//    @autoreleasepool {
-//        NSData* data=[NSData dataWithBytes:<#(nullable const void *)#> length:<#(NSUInteger)#>];
-//        UIImage* image=[UIImage imageWithData:data];
-//        dispatch_async(dispatch_get_main_queue(), ^{
-//            self.backgroundColor=[UIColor colorWithPatternImage:image];
-//        });
-//    }
+- (void) display_pixels: (IJKOverlay *) overlay {   
+    @autoreleasepool {
+        Uint8 *dst_data[1];
+//        CGRect screenBounds=[UIScreen mainScreen].bounds;
+//        CGSize screenSize=screenBounds.size;
+        CGFloat scale=2.0;
+//        if (screenSize.width>=screenSize.height) {
+//            scale=overlay->w/screenSize.width;
+//        }else{
+//            scale=overlay->h/screenSize.height;
+//        }
+        [ESCUIImageToDataTool yuvDataConverteARGBDataWithYdata:overlay->pixels[0] udata:overlay->pixels[1] vdata:overlay->pixels[2] argbData:dst_data width:overlay->w height:overlay->h];
+        UIImage* image=[ESCUIImageToDataTool getImageFromRGBAData:dst_data[0]  width:overlay->w height:overlay->h scale:scale];
+        free(dst_data[0]);
+        dst_data[0]=NULL;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.backgroundColor=[UIColor colorWithPatternImage:image];
+            
+        });
+    }
     return;
 }
 

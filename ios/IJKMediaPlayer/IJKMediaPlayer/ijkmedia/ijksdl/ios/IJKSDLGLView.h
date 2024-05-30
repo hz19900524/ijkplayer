@@ -25,14 +25,13 @@
 
 #import <UIKit/UIKit.h>
 #import "IJKSDLGLViewProtocol.h"
-
+#import <Accelerate/Accelerate.h>
 #include "ijksdl/ijksdl_vout.h"
 
 @interface IJKSDLGLView : UIView <IJKSDLGLViewProtocol>
 
 - (id) initWithFrame:(CGRect)frame;
 - (void) display: (SDL_VoutOverlay *) overlay;
-
 - (UIImage*) snapshot;
 - (void)setShouldLockWhileBeingMovedToWindow:(BOOL)shouldLockWhiteBeingMovedToWindow __attribute__((deprecated("unused")));
 
