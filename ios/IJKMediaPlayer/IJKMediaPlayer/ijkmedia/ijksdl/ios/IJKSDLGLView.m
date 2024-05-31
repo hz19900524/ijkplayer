@@ -331,21 +331,23 @@ typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
 - (void) display_pixels: (IJKOverlay *) overlay {   
     @autoreleasepool {
         Uint8 *dst_data[1];
-//        CGRect screenBounds=[UIScreen mainScreen].bounds;
-//        CGSize screenSize=screenBounds.size;
-        CGFloat scale=2.0;
-//        if (screenSize.width>=screenSize.height) {
-//            scale=overlay->w/screenSize.width;
-//        }else{
-//            scale=overlay->h/screenSize.height;
-//        }
+        static CGFloat scale=1.0;
+        static dispatch_once_t onceScale;
+        dispatch_once(&onceScale, ^{
+            CGRect screenBounds=[UIScreen mainScreen].bounds;
+            CGSize screenSize=screenBounds.size;
+            if (screenSize.width>=screenSize.height) {
+                scale=overlay->w/screenSize.width;
+            }else{
+                scale=overlay->h/screenSize.height;
+            }
+        });
         [ESCUIImageToDataTool yuvDataConverteARGBDataWithYdata:overlay->pixels[0] udata:overlay->pixels[1] vdata:overlay->pixels[2] argbData:dst_data width:overlay->w height:overlay->h];
         UIImage* image=[ESCUIImageToDataTool getImageFromRGBAData:dst_data[0]  width:overlay->w height:overlay->h scale:scale];
         free(dst_data[0]);
         dst_data[0]=NULL;
         dispatch_async(dispatch_get_main_queue(), ^{
             self.backgroundColor=[UIColor colorWithPatternImage:image];
-            
         });
     }
     return;
