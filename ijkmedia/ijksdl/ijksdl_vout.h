@@ -69,6 +69,7 @@ struct SDL_Vout {
     int (*display_overlay)(SDL_Vout *vout, SDL_VoutOverlay *overlay);
 
     Uint32 overlay_format;
+    int frame_rotate_degrees;
 };
 
 void SDL_VoutFree(SDL_Vout *vout);

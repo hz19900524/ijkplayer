@@ -39,6 +39,7 @@ static IJKFF_Pipenode *func_open_video_decoder(IJKFF_Pipeline *pipeline, FFPlaye
 {
     IJKFF_Pipenode* node = NULL;
     IJKFF_Pipeline_Opaque *opaque = pipeline->opaque;
+    SDL_Vout * vout=ffp->vout;
     if (ffp->videotoolbox) {
         node = ffpipenode_create_video_decoder_from_ios_videotoolbox(ffp);
         if (!node)
@@ -51,6 +52,9 @@ static IJKFF_Pipenode *func_open_video_decoder(IJKFF_Pipeline *pipeline, FFPlaye
     } else {
         ffp->stat.vdec_type = FFP_PROPV_DECODER_VIDEOTOOLBOX;
         opaque->is_videotoolbox_open = true;
+    }
+    if (vout) {
+        vout->frame_rotate_degrees=ffp_get_video_rotate_degrees(ffp);
     }
     ffp_notify_msg2(ffp, FFP_MSG_VIDEO_DECODER_OPEN, opaque->is_videotoolbox_open);
     return node;

@@ -64,12 +64,19 @@ typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
     NSMutableArray *_registeredNotifications;
 
     IJKSDLGLViewApplicationState _applicationState;
+    Uint8 *pixels_3d[2];
 }
 
-@synthesize isThirdGLView              = _isThirdGLView;
-@synthesize scaleFactor                = _scaleFactor;
-@synthesize fps                        = _fps;
-
+@synthesize isThirdGLView= _isThirdGLView;
+@synthesize scaleFactor = _scaleFactor;
+@synthesize fps= _fps;
+@synthesize showFrameIndex=_showFrameIndex;
+@synthesize videoLeftFrame=_videoLeftFrame;
+@synthesize videoRightFrame=_videoRightFrame;
+@synthesize videosFramesArray=_videosFramesArray;
+@synthesize timer=_timer;
+@synthesize videoLeftMarkWater=_videoLeftMarkWater;
+@synthesize videoRightMarkWater=_videoRightMarkWater;
 + (Class) layerClass
 {
 	return [CAEAGLLayer class];
@@ -89,7 +96,7 @@ typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
         if ([self isApplicationActive] == YES)
             [self setupGLOnce];
     }
-
+    self.backgroundColor=[UIColor blackColor];
     return self;
 }
 
@@ -222,7 +229,6 @@ typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
     [self lockGLActive];
 
     _didStopGL = YES;
-
     EAGLContext *prevContext = [EAGLContext currentContext];
     [EAGLContext setCurrentContext:_context];
     
@@ -246,7 +252,28 @@ typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
     _context = nil;
 
     [self unregisterApplicationObservers];
-
+    //加入的代码 start
+    if (_timer) {
+        [_timer invalidate];
+        _timer=nil;
+    }
+    [_videoLeftFrame removeFromSuperview];
+ 
+    [_videoRightFrame removeFromSuperview];
+    if (pixels_3d[0]) {
+        free(pixels_3d[0]);
+    }
+    if (pixels_3d[1]) {
+        free(pixels_3d[1]);
+    }
+    [_videosFramesArray removeAllObjects];
+    _videoLeftMarkWater=nil;
+    _videoRightMarkWater=nil;
+    _videoLeftFrame=nil;
+    _videoRightFrame=nil;
+    _videosFramesArray=nil;
+    _showFrameIndex=0;
+    //加入的代码 end
     [self unlockGLActive];
 }
 
@@ -320,41 +347,155 @@ typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
     if ([[NSThread currentThread] isMainThread]) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
             if (_isRenderBufferInvalidated)
-                [self display:nil];
+                [self display:nil rotate_degrees:0];
         });
     } else {
-        [self display:nil];
+        [self display:nil rotate_degrees:0];
     }
 
     [self unlockGLActive];
 }
-- (void) display_pixels: (IJKOverlay *) overlay {   
-    @autoreleasepool {
+
+- (void) display_pixels: (IJKOverlay *) overlay rotate_degrees:(int)rotate_degrees{
+
         Uint8 *dst_data[1];
-        static CGFloat scale=1.0;
         static dispatch_once_t onceScale;
+        static CGRect imageViewRect;
         dispatch_once(&onceScale, ^{
             CGRect screenBounds=[UIScreen mainScreen].bounds;
             CGSize screenSize=screenBounds.size;
-            if (screenSize.width>=screenSize.height) {
-                scale=overlay->w/screenSize.width;
+            if (rotate_degrees==90||rotate_degrees==270) {
+                if (screenSize.width>=screenSize.height) {
+                    CGFloat imageViewRectWidth=screenSize.height*overlay->h/overlay->w;
+                    CGFloat position_x=(screenSize.width - imageViewRectWidth)/2;
+                    imageViewRect=CGRectMake(position_x, 0, imageViewRectWidth, screenSize.height);
+                }else{
+                    
+                }
             }else{
-                scale=overlay->h/screenSize.height;
+                CGFloat width=screenSize.width;
+                CGFloat height=screenSize.height;
+                if (height > width / 16 * 9) {height = width / 16 * 9;}
+                else{width = height / 9 * 16;}
+                imageViewRect=CGRectMake((screenSize.width-width)/2, (screenSize.height-height)/2, width, height);
             }
         });
-        [ESCUIImageToDataTool yuvDataConverteARGBDataWithYdata:overlay->pixels[0] udata:overlay->pixels[1] vdata:overlay->pixels[2] argbData:dst_data width:overlay->w height:overlay->h];
-        UIImage* image=[ESCUIImageToDataTool getImageFromRGBAData:dst_data[0]  width:overlay->w height:overlay->h scale:scale];
-        free(dst_data[0]);
-        dst_data[0]=NULL;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            self.backgroundColor=[UIColor colorWithPatternImage:image];
-        });
+    [ESCUIImageToDataTool yuvDataConverteARGBDataWithYdata:overlay->pixels[0] udata:overlay->pixels[1] vdata:overlay->pixels[2] argbData:dst_data width:overlay->w height:overlay->h];
+    UIImage* leftimage=nil;
+    UIImage* rightImage=nil;
+    UIImage* rotateImage=nil;
+    int32_t dst_line_size = overlay->w * 2;
+    int32_t src_line_size = overlay->w * 4;
+    int32_t frameWidth=overlay->w;
+    int32_t frameHeight=overlay->h;
+    const uint8_t *src_pixels =dst_data[0];
+    if (!pixels_3d[0]) {
+        pixels_3d[0] = (uint8_t *) calloc(1, dst_line_size*overlay->h);
     }
+    if (!pixels_3d[1]) {
+        pixels_3d[1] = (uint8_t *) calloc(1, dst_line_size*overlay->h);
+    }
+    switch (rotate_degrees) {
+        case 0:
+            break;
+        case 180:
+            rotateImage=[ESCUIImageToDataTool rotateImage:[ESCUIImageToDataTool getImageFromRGBAData:dst_data[0]  width:overlay->w height:overlay->h] byDegrees:rotate_degrees];
+            [ESCUIImageToDataTool getImageRGBADataWithImage:rotateImage rgbaData:dst_data[0]];
+            rotateImage=nil;
+            break;
+        case 90:
+        case 270:
+            frameWidth=overlay->h;
+            frameHeight=overlay->w;
+            dst_line_size = overlay->h * 2;
+            src_line_size = overlay->h * 4;
+            rotateImage=[ESCUIImageToDataTool rotateImage:[ESCUIImageToDataTool getImageFromRGBAData:dst_data[0]  width:overlay->w height:overlay->h] byDegrees:rotate_degrees];
+            [ESCUIImageToDataTool getImageRGBADataWithImage:rotateImage rgbaData:dst_data[0]];
+            rotateImage=nil;
+            break;
+        default:
+            break;
+    }
+    //左帧图像处理
+    av_image_copy_plane(pixels_3d[0], dst_line_size, src_pixels,
+                        src_line_size,
+                        dst_line_size,
+                        frameHeight);
+    src_pixels += dst_line_size;
+    //右帧图像处理
+    av_image_copy_plane(pixels_3d[1], dst_line_size, src_pixels,
+                        src_line_size,
+                        dst_line_size,
+                        frameHeight);
+//    leftimage=[ESCUIImageToDataTool getImageFromRGBAData:pixels_3d[0]  width:frameWidth>>1 height:frameHeight];
+//    rightImage=[ESCUIImageToDataTool getImageFromRGBAData:pixels_3d[1]  width:frameWidth>>1 height:frameHeight];
+    
+    if (!_videoLeftMarkWater) {
+        _videoRightMarkWater=[UIImage imageNamed:@"yellow_128"];
+    }
+    if (!_videoRightFrame) {
+        _videoLeftMarkWater=[UIImage imageNamed:@"black_128"];
+    }
+    leftimage=[ESCUIImageToDataTool mergeImages:[ESCUIImageToDataTool getImageFromRGBAData:pixels_3d[0]  width:frameWidth>>1 height:frameHeight] withImage:_videoLeftMarkWater];
+    rightImage=[ESCUIImageToDataTool mergeImages:[ESCUIImageToDataTool getImageFromRGBAData:pixels_3d[1]  width:frameWidth>>1 height:frameHeight] withImage:_videoRightMarkWater];
+    
+    free(dst_data[0]);
+    dst_data[0]=NULL;
+    src_pixels=NULL;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+            // 创建一个UIImageView实例，并设置其为myView的背景
+            if (!_videoLeftFrame) {
+                _videoLeftFrame = [[UIImageView alloc] initWithFrame:imageViewRect];
+                // 如果你想确保图片填充整个UIView，可以设置UIImageView的contentMode属性
+                _videoLeftFrame.contentMode = UIViewContentModeScaleToFill;
+            }
+            
+            if (!_videoRightFrame) {
+                _videoRightFrame = [[UIImageView alloc] initWithFrame:imageViewRect];
+                // 如果你想确保图片填充整个UIView，可以设置UIImageView的contentMode属性
+                _videoRightFrame.contentMode = UIViewContentModeScaleToFill;
+            }
+            if (!_videosFramesArray) {
+                _videosFramesArray=[NSMutableArray array];
+            }
+            if (!_timer) {
+                _timer=[NSTimer timerWithTimeInterval:0.016 target:self selector:@selector(frameSwapByTimer) userInfo:nil repeats:YES];
+                // 将定时器加入运行循环
+                [[NSRunLoop currentRunLoop] addTimer:_timer forMode:NSRunLoopCommonModes];
+            }
+            [_videosFramesArray addObject:leftimage];
+            [_videosFramesArray addObject:rightImage];
+            
+        });
     return;
 }
 
-- (void)display: (SDL_VoutOverlay *) overlay
-{
+- (void)frameSwapByTimer {
+    if (_videosFramesArray.count!=0&&_showFrameIndex==0) {
+        _videoLeftFrame.image=_videosFramesArray[0];
+        _videoRightFrame.image=_videosFramesArray[1];
+        [_videosFramesArray removeAllObjects];
+    }
+    if (_showFrameIndex==0) {
+        if (_videoLeftFrame) {
+            [self addSubview:_videoLeftFrame];
+        }
+        if (_videoRightFrame) {
+            [_videoRightFrame removeFromSuperview];
+        }
+        _showFrameIndex=1;
+    }else{
+        if (_videoRightFrame) {
+            [self addSubview:_videoRightFrame];
+        }
+        if (_videoLeftFrame) {
+            [_videoLeftFrame removeFromSuperview];
+        }
+        _showFrameIndex=0;
+    }
+}
+ 
+- (void)display:(SDL_VoutOverlay *)overlay rotate_degrees:(int)rotate_degrees{
     if (_didSetupGL == NO)
         return;
 
@@ -379,7 +520,6 @@ typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
 
     [self unlockGLActive];
 }
-
 // NOTE: overlay could be NULl
 - (void)displayInternal: (SDL_VoutOverlay *) overlay
 {

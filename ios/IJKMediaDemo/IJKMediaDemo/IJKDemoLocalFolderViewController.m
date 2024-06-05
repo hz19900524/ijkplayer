@@ -126,7 +126,8 @@
 //
 //            fileName = [fileName stringByStandardizingPath];
             //临时测试使用 start VID_20190620_101527.mp4 AFD.mkv
-            NSString* fileName=[[NSBundle mainBundle] pathForResource:@"VID_20190620_101527" ofType:@"mp4"];
+            //NSString* fileName=[[NSBundle mainBundle] pathForResource:@"VID_20190620_101527" ofType:@"mp4"];
+            NSString* fileName=[[NSBundle mainBundle] pathForResource:@"AFD" ofType:@"mkv"];
             //end
             [IJKVideoViewController presentFromViewController:self withTitle:[NSString stringWithFormat:@"File: %@", fileName] URL:[NSURL fileURLWithPath:fileName] completion:^{
             }];

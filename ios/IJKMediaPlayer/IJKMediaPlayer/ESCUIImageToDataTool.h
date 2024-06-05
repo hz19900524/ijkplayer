@@ -11,15 +11,14 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ESCUIImageToDataTool : NSObject
-
++(UIImage *)rotateImage:(UIImage *)image byDegrees:(NSInteger)degrees;
 + (void)getImageRGBADataWithImage:(UIImage *)image
-                         rgbaData:(uint8_t *)rgbaData
-                           length:(int *)length;
+                         rgbaData:(uint8_t *)rgbaData;
 
 + (UIImage *)getImageFromRGBAData:(uint8_t *)rgbaData
                             width:(int)width
-                           height:(int)height
-                            scale:(float)scale;
+                           height:(int)height;
++ (UIImage *)mergeImages:(UIImage *)firstImage withImage:(UIImage *)secondImage;
 
 + (BOOL)yuvDataConverteARGBDataWithYdata:(uint8_t *)ydata
                                    udata:(uint8_t *)udata

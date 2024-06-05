@@ -29,10 +29,15 @@
 #include "ijksdl/ijksdl_vout.h"
 
 @interface IJKSDLGLView : UIView <IJKSDLGLViewProtocol>
-
 - (id) initWithFrame:(CGRect)frame;
-- (void) display: (SDL_VoutOverlay *) overlay;
+- (void) display: (SDL_VoutOverlay *) overlay rotate_degrees:(int) rotate_degrees;
 - (UIImage*) snapshot;
 - (void)setShouldLockWhileBeingMovedToWindow:(BOOL)shouldLockWhiteBeingMovedToWindow __attribute__((deprecated("unused")));
-
+@property(nonatomic,retain) UIImageView* videoLeftFrame;
+@property(nonatomic,retain) UIImageView* videoRightFrame;
+@property(nonatomic,retain)UIImage* videoLeftMarkWater;
+@property(nonatomic,retain)UIImage* videoRightMarkWater;
+@property(nonatomic,retain) NSMutableArray* videosFramesArray;
+@property(nonatomic) int showFrameIndex;
+@property(nonatomic,retain)NSTimer *timer;
 @end

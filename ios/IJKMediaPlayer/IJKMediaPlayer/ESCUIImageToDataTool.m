@@ -10,7 +10,7 @@
 #import <Accelerate/Accelerate.h>
 @implementation ESCUIImageToDataTool
 
-+ (void)getImageRGBADataWithImage:(UIImage *)image rgbaData:(uint8_t *)rgbaData length:(int *)length {
++ (void)getImageRGBADataWithImage:(UIImage *)image rgbaData:(uint8_t *)rgbaData{
     int imageWidth = image.size.width;
     int imageHeight = image.size.height;
     size_t bytesPerRow = imageWidth * 4;
@@ -21,17 +21,69 @@
     CGContextRelease(context);
     CGColorSpaceRelease(colorSpace);
 }
++(UIImage *)rotateImage:(UIImage *)image byDegrees:(NSInteger)degrees {
+    CGRect rotatedRect;
+       switch (degrees) {
+        case 0:
+        case 180:
+            rotatedRect =CGRectMake(0, 0, image.size.width,image.size.height);
+            break;
+        case 90:
+        case 270:
+            rotatedRect =CGRectMake(0, 0, image.size.height,image.size.width);
+            break;
+        default:
+            break;
+        }
+        
+        CGSize rotatedSize = rotatedRect.size;
+        // 开启图形上下文
+        UIGraphicsBeginImageContext(rotatedSize);
+        CGContextRef bitmap = UIGraphicsGetCurrentContext();
+        // 移动到中心点
+        CGContextTranslateCTM(bitmap, rotatedSize.width / 2, rotatedSize.height / 2);
+        // 旋转
+        CGContextRotateCTM(bitmap, degrees * M_PI / 180.0);
+        // 移动回原位
+        CGContextTranslateCTM(bitmap, -image.size.width / 2, -image.size.height / 2);
+        // 绘制图片
+        [image drawInRect:CGRectMake(0, 0, image.size.width, image.size.height)];
+        // 从图形上下文获取旋转后的图片
+        UIImage *rotatedImage = UIGraphicsGetImageFromCurrentImageContext();
+        // 关闭图形上下文
+        UIGraphicsEndImageContext();
+        
+        return rotatedImage;
 
-+ (UIImage *)getImageFromRGBAData:(uint8_t *)rgbaData width:(int)width height:(int)height scale:(float)scale {
+}
++ (UIImage *)getImageFromRGBAData:(uint8_t *)rgbaData width:(int)width height:(int)height{
     int bytes_per_pix = 4;
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     CGContextRef Context = CGBitmapContextCreate(rgbaData,width, height, 8,width * bytes_per_pix,colorSpace, kCGBitmapByteOrder32Little | kCGImageAlphaPremultipliedLast);
     CGImageRef frame = CGBitmapContextCreateImage(Context);
-    UIImage *image= [UIImage imageWithCGImage:frame scale:scale orientation:UIImageOrientationUp];
+    UIImage *image= [UIImage imageWithCGImage:frame];
     CGImageRelease(frame);
     CGContextRelease(Context);
     CGColorSpaceRelease(colorSpace);
     return image;
+}
++ (UIImage *)mergeImages:(UIImage *)firstImage withImage:(UIImage *)secondImage {
+    // 开始图形上下文
+    UIGraphicsBeginImageContext(firstImage.size);
+ 
+    // 绘制第一张图片
+    [firstImage drawInRect:CGRectMake(0, 0, firstImage.size.width, firstImage.size.height)];
+ 
+    // 绘制第二张图片
+    [secondImage drawInRect:CGRectMake(0, 0, secondImage.size.width, secondImage.size.height)];
+ 
+    // 从图形上下文获取结果图片
+    UIImage *resultingImage = UIGraphicsGetImageFromCurrentImageContext();
+ 
+    // 结束图形上下文
+    UIGraphicsEndImageContext();
+ 
+    return resultingImage;
 }
 
 + (BOOL)yuvDataConverteARGBDataWithYdata:(uint8_t *)ydata

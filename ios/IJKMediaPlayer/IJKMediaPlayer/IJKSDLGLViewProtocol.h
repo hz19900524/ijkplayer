@@ -44,7 +44,8 @@ struct IJKOverlay {
 @property(nonatomic, readonly) CGFloat  fps;
 @property(nonatomic)        CGFloat  scaleFactor;
 @property(nonatomic)        BOOL  isThirdGLView;
-- (void) display_pixels: (IJKOverlay *) overlay;
+
+- (void) display_pixels: (IJKOverlay *) overlay rotate_degrees:(int)rotate_degrees;
 @end
 
 #endif /* IJKSDLGLViewProtocol_h */
