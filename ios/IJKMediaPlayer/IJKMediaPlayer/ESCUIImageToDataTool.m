@@ -75,7 +75,7 @@
     [firstImage drawInRect:CGRectMake(0, 0, firstImage.size.width, firstImage.size.height)];
  
     // 绘制第二张图片
-    [secondImage drawInRect:CGRectMake(0, 0, secondImage.size.width, secondImage.size.height)];
+    [secondImage drawInRect:CGRectMake(firstImage.size.width-secondImage.size.width, 0, secondImage.size.width, secondImage.size.height)];
  
     // 从图形上下文获取结果图片
     UIImage *resultingImage = UIGraphicsGetImageFromCurrentImageContext();
