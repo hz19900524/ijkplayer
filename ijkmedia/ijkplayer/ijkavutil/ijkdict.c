@@ -21,6 +21,7 @@
 
 #include "ijkdict.h"
 #include "ijkutils.h"
+#include "libavutil/dict.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>

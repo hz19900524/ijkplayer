@@ -76,6 +76,7 @@
             NSLog(@"failed to inactive AVAudioSession\n");
         }
     }
+    return true;
 }
 
 - (void)handleInterruption:(NSNotification *)notification
