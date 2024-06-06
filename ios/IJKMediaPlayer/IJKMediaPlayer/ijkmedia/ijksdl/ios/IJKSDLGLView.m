@@ -427,8 +427,6 @@ typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
                         src_line_size,
                         dst_line_size,
                         frameHeight);
-//    leftimage=[ESCUIImageToDataTool getImageFromRGBAData:pixels_3d[0]  width:frameWidth>>1 height:frameHeight];
-//    rightImage=[ESCUIImageToDataTool getImageFromRGBAData:pixels_3d[1]  width:frameWidth>>1 height:frameHeight];
     
     if (!_videoLeftMarkWater) {
         _videoRightMarkWater=[UIImage imageNamed:@"yellow_128"];
@@ -652,12 +650,10 @@ typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
 - (void)unregisterApplicationObservers
 {
     for (NSString *name in _registeredNotifications) {
-        [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                        name:name
-                                                      object:nil];
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:name object:nil];
     }
 }
-
+//当程序从后台将要重新回到前台（但是还没变成Active状态）时候调用
 - (void)applicationWillEnterForeground
 {
     NSLog(@"IJKSDLGLView:applicationWillEnterForeground: %d", (int)[UIApplication sharedApplication].applicationState);
@@ -665,21 +661,21 @@ typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
     _applicationState = IJKSDLGLViewApplicationForegroundState;
     [self toggleGLPaused:NO];
 }
-
+//当应用即将进入前台运行时调用
 - (void)applicationDidBecomeActive
 {
     NSLog(@"IJKSDLGLView:applicationDidBecomeActive: %d", (int)[UIApplication sharedApplication].applicationState);
     [self setupGLOnce];
     [self toggleGLPaused:NO];
 }
-
+//当应用即将从前台退出时调用
 - (void)applicationWillResignActive
 {
     NSLog(@"IJKSDLGLView:applicationWillResignActive: %d", (int)[UIApplication sharedApplication].applicationState);
     [self toggleGLPaused:YES];
     glFinish();
 }
-
+//当应用开始在后台运行的时候调用
 - (void)applicationDidEnterBackground
 {
     NSLog(@"IJKSDLGLView:applicationDidEnterBackground: %d", (int)[UIApplication sharedApplication].applicationState);
@@ -687,7 +683,7 @@ typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
     [self toggleGLPaused:YES];
     glFinish();
 }
-
+//当应用即将被终止，在种终止前调用的函数。通常是用来保存数据和一些退出前的清理工作。如果应用当前处在suspended,此方法不会被调用。该方法最长运行时限为3秒，过期应用即被kill掉并且移除内存
 - (void)applicationWillTerminate
 {
     NSLog(@"IJKSDLGLView:applicationWillTerminate: %d", (int)[UIApplication sharedApplication].applicationState);
