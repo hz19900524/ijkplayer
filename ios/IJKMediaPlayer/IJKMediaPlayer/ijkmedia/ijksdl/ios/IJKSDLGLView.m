@@ -429,10 +429,10 @@ typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
                         frameHeight);
     
     if (!_videoLeftMarkWater) {
-        _videoRightMarkWater=[UIImage imageNamed:@"yellow_128"];
+        _videoRightMarkWater=[UIImage imageNamed:@"yellow_256_elliptic"];
     }
     if (!_videoRightFrame) {
-        _videoLeftMarkWater=[UIImage imageNamed:@"black_128"];
+        _videoLeftMarkWater=[UIImage imageNamed:@"black_256_elliptic"];
     }
     leftimage=[ESCUIImageToDataTool mergeImages:[ESCUIImageToDataTool getImageFromRGBAData:pixels_3d[0]  width:frameWidth>>1 height:frameHeight] withImage:_videoLeftMarkWater];
     rightImage=[ESCUIImageToDataTool mergeImages:[ESCUIImageToDataTool getImageFromRGBAData:pixels_3d[1]  width:frameWidth>>1 height:frameHeight] withImage:_videoRightMarkWater];
