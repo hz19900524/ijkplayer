@@ -429,10 +429,10 @@ typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
                         frameHeight);
     
     if (!_videoLeftMarkWater) {
-        _videoRightMarkWater=[UIImage imageNamed:@"yellow_256_elliptic"];
+        _videoRightMarkWater=[UIImage imageNamed:@"yellow_128_elliptic"];
     }
     if (!_videoRightFrame) {
-        _videoLeftMarkWater=[UIImage imageNamed:@"black_256_elliptic"];
+        _videoLeftMarkWater=[UIImage imageNamed:@"black_128_elliptic"];
     }
     leftimage=[ESCUIImageToDataTool mergeImages:[ESCUIImageToDataTool getImageFromRGBAData:pixels_3d[0]  width:frameWidth>>1 height:frameHeight] withImage:_videoLeftMarkWater];
     rightImage=[ESCUIImageToDataTool mergeImages:[ESCUIImageToDataTool getImageFromRGBAData:pixels_3d[1]  width:frameWidth>>1 height:frameHeight] withImage:_videoRightMarkWater];
@@ -457,7 +457,7 @@ typedef NS_ENUM(NSInteger, IJKSDLGLViewApplicationState) {
                 _videosFramesArray=[NSMutableArray array];
             }
             if (!_timer) {
-                _timer=[NSTimer timerWithTimeInterval:0.016 target:self selector:@selector(frameSwapByTimer) userInfo:nil repeats:YES];
+                _timer=[NSTimer timerWithTimeInterval:0.008 target:self selector:@selector(frameSwapByTimer) userInfo:nil repeats:YES];
                 // 将定时器加入运行循环
                 [[NSRunLoop currentRunLoop] addTimer:_timer forMode:NSRunLoopCommonModes];
             }
